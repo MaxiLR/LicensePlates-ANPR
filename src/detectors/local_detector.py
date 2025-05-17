@@ -1,6 +1,4 @@
 import logging
-from inference import get_model
-import supervision as sv
 from .base import LicensePlateDetector
 
 logger = logging.getLogger(__name__)
@@ -17,12 +15,15 @@ class LocalLicensePlateDetector(LicensePlateDetector):
         """
         logger.info(f"Initializing local detector with model {model_id}")
         try:
+            # Import heavy dependencies only when needed
+            from inference import get_model
+
             self.model = get_model(model_id=model_id)
         except Exception as e:
             logger.error(f"Failed to initialize local detector: {e}")
             raise
 
-    def detect_plates(self, image) -> sv.Detections:
+    def detect_plates(self, image):
         """Detect license plates using local model.
 
         Args:
@@ -32,6 +33,9 @@ class LocalLicensePlateDetector(LicensePlateDetector):
             sv.Detections: Detected license plates
         """
         try:
+            # Import heavy dependencies only when needed
+            import supervision as sv
+
             results = self.model.infer(image)[0]
             return sv.Detections.from_inference(results)
         except Exception as e:

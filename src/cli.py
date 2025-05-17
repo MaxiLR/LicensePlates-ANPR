@@ -1,28 +1,16 @@
 import os
-from typing import Dict, List, Optional, Tuple
-import typer
-import logging
-from rich.console import Console
-from rich.progress import Progress, SpinnerColumn, TextColumn
 from enum import Enum
+import typer
 from typing_extensions import Annotated
-from dotenv import load_dotenv
-import pathlib
-from .detectors.local_detector import LocalLicensePlateDetector
-from .detectors.sdk_detector import SDKLicensePlateDetector
-from .processor import LicensePlateProcessor
-
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-)
-logger = logging.getLogger(__name__)
-console = Console()
+from typing import Optional
+from rich.console import Console
 
 # Create CLI app
 app = typer.Typer(
     help="License Plate Detection and Recognition CLI", add_completion=False
 )
+
+console = Console()
 
 
 class DetectorType(str, Enum):
@@ -32,23 +20,48 @@ class DetectorType(str, Enum):
     SDK = "sdk"
 
 
-def process_directory(
-    processor: LicensePlateProcessor,
-    directory: str,
-    recursive: bool = False,
-    extensions: List[str] = [".jpg", ".jpeg", ".png"],
-) -> Dict[str, Dict[str, Tuple[int, int, int, int]]]:
-    """Process all images in a directory.
+def init_logging():
+    """Initialize logging configuration."""
+    import logging
 
-    Args:
-        processor: LicensePlateProcessor instance
-        directory: Directory path
-        recursive: Whether to process subdirectories
-        extensions: List of valid file extensions
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    )
+    return logging.getLogger(__name__)
 
-    Returns:
-        Dict mapping image paths to their results
-    """
+
+def get_processor(
+    detector_type: DetectorType,
+    model_id: str,
+    api_key: str = None,
+    plate_model: str = None,
+    output_dir: Optional[str] = None,
+):
+    """Initialize detector and processor with lazy imports."""
+    # Import heavy dependencies only when needed
+    from .detectors.local_detector import LocalLicensePlateDetector
+    from .detectors.sdk_detector import SDKLicensePlateDetector
+    from .processor import LicensePlateProcessor
+
+    if detector_type == DetectorType.LOCAL:
+        detector = LocalLicensePlateDetector(model_id=model_id)
+    else:
+        if not api_key:
+            console.print("[red]Error: API key required for SDK detector[/red]")
+            raise typer.Exit(1)
+        detector = SDKLicensePlateDetector(api_key=api_key, model_id=model_id)
+
+    return LicensePlateProcessor(
+        detector=detector, plate_model=plate_model, output_dir=output_dir
+    )
+
+
+def process_directory(processor, directory: str, recursive: bool = False):
+    """Process all images in a directory."""
+    import pathlib
+
+    extensions = [".jpg", ".jpeg", ".png"]
     image_paths = []
     pattern = "**/*" if recursive else "*"
 
@@ -77,7 +90,12 @@ def detect(
 ):
     """Detect and recognize license plates in images."""
     try:
-        # Load configuration
+        # Initialize logging
+        logger = init_logging()
+
+        # Import dotenv only when needed
+        from dotenv import load_dotenv
+
         load_dotenv()
 
         # Get configuration from environment
@@ -89,25 +107,21 @@ def detect(
         # Use provided output_dir or default
         output_directory = output_dir or default_output
 
+        # Import progress only when needed
+        from rich.progress import Progress, SpinnerColumn, TextColumn
+
         with Progress(
             SpinnerColumn(),
             TextColumn("[progress.description]{task.description}"),
             console=console,
         ) as progress:
-            # Initialize detector
+            # Initialize detector and processor
             progress.add_task(description="Initializing detector...", total=None)
 
-            if detector_type == DetectorType.LOCAL:
-                detector = LocalLicensePlateDetector(model_id=model_id)
-            else:
-                if not api_key:
-                    console.print("[red]Error: API key required for SDK detector[/red]")
-                    raise typer.Exit(1)
-                detector = SDKLicensePlateDetector(api_key=api_key, model_id=model_id)
-
-            # Initialize processor
-            processor = LicensePlateProcessor(
-                detector=detector,
+            processor = get_processor(
+                detector_type=detector_type,
+                model_id=model_id,
+                api_key=api_key,
                 plate_model=plate_model,
                 output_dir=output_directory if save_result else None,
             )
@@ -150,4 +164,6 @@ def detect(
 @app.command()
 def version():
     """Show version information."""
-    console.print("License Plate Detection and Recognition v1.0.0")
+    from . import __version__
+
+    console.print(f"License Plate Detection and Recognition v{__version__}")

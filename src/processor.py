@@ -1,11 +1,7 @@
 import os
-import cv2
 import logging
 import pathlib
 from typing import Dict, List, Tuple, Optional
-import numpy as np
-import supervision as sv
-from fast_plate_ocr import ONNXPlateRecognizer
 from .detectors.base import LicensePlateDetector
 
 logger = logging.getLogger(__name__)
@@ -29,6 +25,9 @@ class LicensePlateProcessor:
         """
         self.detector = detector
         try:
+            # Import heavy dependencies only when needed
+            from fast_plate_ocr import ONNXPlateRecognizer
+
             self.plate_reader = ONNXPlateRecognizer(plate_model)
             if output_dir:
                 pathlib.Path(output_dir).mkdir(parents=True, exist_ok=True)
@@ -51,6 +50,10 @@ class LicensePlateProcessor:
             Dict mapping plate text to bounding box coordinates
         """
         try:
+            # Import heavy dependencies only when needed
+            import cv2
+            import supervision as sv
+
             logger.info(f"Processing image: {image_path}")
             image = cv2.imread(image_path)
             if image is None:
@@ -115,6 +118,9 @@ class LicensePlateProcessor:
         Returns:
             Dict mapping plate text to coordinates
         """
+        # Import heavy dependencies only when needed
+        import cv2
+
         labels = {}
         for i in range(len(detections)):
             try:
@@ -138,6 +144,10 @@ class LicensePlateProcessor:
         Returns:
             Annotated image
         """
+        # Import heavy dependencies only when needed
+        import numpy as np
+        import supervision as sv
+
         bounding_box_annotator = sv.BoxAnnotator()
         label_annotator = sv.LabelAnnotator()
 
