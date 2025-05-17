@@ -1,85 +1,164 @@
-# License Plate Recognition System
+# License Plate Detection and Recognition
 
-A Python-based system for detecting and recognizing license plates from images using deep learning and computer vision techniques.
+This project provides a flexible implementation for detecting and recognizing license plates in images using either local processing or the Roboflow API.
 
 ## Features
 
-- Detects license plates in images (using Roboflow inference)
-- Recognizes plate numbers using OCR
-- Annotates images with detected plates and their numbers
-- Uses CPU execution for inference
-- Modular architecture for easy model switching
-
-## Inference Implementation
-
-The system currently uses Roboflow inference for license plate detection, but this can be easily modified by changing the implementation of the `detect_plates` function. The current implementation uses a Roboflow model with ID `license-plates-xfeyr/1`, but you can replace it with any other detection model by modifying the `model = get_model()` line in `main.py`.
-
-To switch to a different detection model:
-1. Update the `model_id` parameter in the `get_model()` call
-2. Ensure the new model outputs detections in a compatible format
-3. The rest of the pipeline (OCR and annotation) remains unchanged
-
-This modular design allows you to experiment with different detection models without affecting the OCR or annotation components.
+- Support for both local and Roboflow SDK-based detection
+- Batch processing capabilities
+- Configurable output options (save/show results)
+- Comprehensive error handling and logging
+- Easy to extend with new detection implementations
+- Command Line Interface (CLI) for easy usage
+- Support for processing single images or entire directories
+- Rich console output with progress indicators
 
 ## Installation
 
 1. Clone the repository:
+
 ```bash
-git clone https://github.com/MaxiLR/LicensePlates-ANPR.git
+git clone https://github.com/yourusername/LicensePlates-ANPR.git
 cd LicensePlates-ANPR
 ```
 
-2. Create and activate a virtual environment:
-```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-```
+2. Install dependencies:
 
-3. Install dependencies:
 ```bash
 pip install -r requirements.txt
 ```
 
+3. Create a `.env` file with your configuration:
+
+```bash
+ROBOFLOW_API_KEY=your_api_key_here [required]
+ROBOFLOW_API_URL=https://serverless.roboflow.com [optional]
+MODEL_ID=license-plates-xfeyr/1 [optional]
+PLATE_MODEL=global-plates-mobile-vit-v2-model [optional]
+OUTPUT_DIR=output [optional]
+```
+
 ## Usage
 
-1. Place your test image in the project directory as `test.jpg`
-2. Run the script:
+### Command Line Interface (CLI)
+
+The easiest way to use the tool is through its CLI:
+
+1. Process a single image:
+
 ```bash
-python main.py
+# Using local detector (default)
+python main.py detect image.jpg
+
+# Using SDK detector
+python main.py detect image.jpg --detector-type sdk
+
+# Show results in window
+python main.py detect image.jpg --show-result
+
+# Specify output directory
+python main.py detect image.jpg --output-dir results
 ```
 
-The script will:
-1. Detect license plates in the image
-2. Recognize the plate numbers
-3. Annotate the image with bounding boxes and plate numbers
-4. Display the annotated image
+2. Process a directory of images:
 
-## Requirements
+```bash
+# Process all images in a directory
+python main.py detect ./images/
 
-- Python 3.8 or higher
-- OpenCV for image processing
-- Supervision for detection and annotation
-- Fast Plate OCR for license plate recognition
-- ONNX Runtime for model inference
+# Process directory recursively
+python main.py detect ./images/ --recursive
 
-## Environment Variables
-
-The project uses environment variables for configuration. Create a `.env` file based on `.env.example`:
-
-```
-# .env
-# Add any required environment variables here
+# Process with SDK and custom output
+python main.py detect ./images/ --detector-type sdk --output-dir results
 ```
 
-## Dependencies
+Available options:
 
-The project uses the following major dependencies:
-- fast-plate-ocr
-- supervision
-- numpy
-- python-dotenv
-- opencv-python
-- onnxruntime
+```bash
+python main.py detect --help
+```
+
+```
+Options:
+  --detector-type [local|sdk]  Type of detector to use
+  --recursive                  Process subdirectories if input is a directory
+  --show-result               Show results in window
+  --save-result               Save annotated images
+  --output-dir TEXT           Output directory for annotated images
+  --help                      Show this message and exit.
+```
+
+### Programmatic Usage
+
+You can also use the library programmatically:
+
+#### Basic Usage
+
+```python
+from main import LocalLicensePlateDetector, LicensePlateProcessor
+
+# Initialize detector and processor
+detector = LocalLicensePlateDetector(model_id="license-plates-xfeyr/1")
+processor = LicensePlateProcessor(
+    detector=detector,
+    plate_model="global-plates-mobile-vit-v2-model",
+    output_dir="output"
+)
+
+# Process a single image
+results = processor.process_image(
+    "test.jpg",
+    show_result=True,
+    save_result=True
+)
+```
+
+#### Using Roboflow SDK
+
+```python
+from main import SDKLicensePlateDetector, LicensePlateProcessor
+
+# Initialize SDK detector
+detector = SDKLicensePlateDetector(
+    api_key="your_api_key",
+    model_id="license-plates-xfeyr/1"
+)
+processor = LicensePlateProcessor(
+    detector=detector,
+    plate_model="global-plates-mobile-vit-v2-model",
+    output_dir="output"
+)
+
+# Process an image
+results = processor.process_image("test.jpg")
+```
+
+#### Batch Processing
+
+```python
+# Process multiple images
+image_paths = ["image1.jpg", "image2.jpg", "image3.jpg"]
+results = processor.process_batch(
+    image_paths,
+    show_results=False,
+    save_results=True
+)
+```
+
+## Project Structure
+
+- `main.py`: Main implementation with detector classes and processor
+- `.env`: Configuration file (create from .env.example)
+- `requirements.txt`: Project dependencies
+
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
 ## License
 
@@ -88,6 +167,8 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 ## Acknowledgments
 
 - Thanks to the creators of Fast Plate OCR for the plate recognition model
+- Built with Typer for the CLI interface
+- Uses Rich for beautiful console output
 
 ## Support
 
