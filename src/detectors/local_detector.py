@@ -7,7 +7,7 @@ logger = logging.getLogger(__name__)
 class LocalLicensePlateDetector(LicensePlateDetector):
     """Local implementation of license plate detection using inference package."""
 
-    def __init__(self, model_id: str):
+    def __init__(self, model_id: str, api_key: str):
         """Initialize local detector.
 
         Args:
@@ -18,7 +18,7 @@ class LocalLicensePlateDetector(LicensePlateDetector):
             # Import heavy dependencies only when needed
             from inference import get_model
 
-            self.model = get_model(model_id=model_id)
+            self.model = get_model(model_id=model_id, api_key=api_key)
         except Exception as e:
             logger.error(f"Failed to initialize local detector: {e}")
             raise
