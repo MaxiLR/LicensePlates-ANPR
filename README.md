@@ -4,7 +4,7 @@ This project provides a flexible implementation for detecting and recognizing li
 
 ## Features
 
-- Support for both local and Roboflow SDK-based detection
+- Support for YOLOv8, local and Roboflow SDK-based detection
 - Batch processing capabilities
 - Configurable output options (save/show results)
 - Comprehensive error handling and logging
@@ -18,7 +18,7 @@ This project provides a flexible implementation for detecting and recognizing li
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/yourusername/LicensePlates-ANPR.git
+git clone https://github.com/MaxiLR/LicensePlates-ANPR.git
 cd LicensePlates-ANPR
 ```
 
@@ -31,11 +31,12 @@ pip install -r requirements.txt
 3. Create a `.env` file with your configuration:
 
 ```bash
-ROBOFLOW_API_KEY=your_api_key_here [required]
+ROBOFLOW_API_KEY=your_api_key_here [required for SDK/LOCAL]
 ROBOFLOW_API_URL=https://serverless.roboflow.com [optional]
 MODEL_ID=license-plates-xfeyr/1 [optional]
 PLATE_MODEL=global-plates-mobile-vit-v2-model [optional]
 OUTPUT_DIR=output [optional]
+WEIGHTS_PATH=models/license-plate-recognition-rxg4e-wyhgr/1/weights.onnx [required for YOLO]
 ```
 
 ## Usage
@@ -47,7 +48,10 @@ The easiest way to use the tool is through its CLI:
 1. Process a single image:
 
 ```bash
-# Using local detector (default)
+# Using YOLO detector
+python main.py detect image.jpg --detector-type yolo --weights-path models/license-plate-recognition-rxg4e-wyhgr/1/weights.onnx
+
+# Using local detector
 python main.py detect image.jpg
 
 # Using SDK detector
@@ -63,6 +67,9 @@ python main.py detect image.jpg --output-dir results
 2. Process a directory of images:
 
 ```bash
+# Process with YOLO detector
+python main.py detect ./images/ --detector-type yolo --weights-path models/license-plate-recognition-rxg4e-wyhgr/1/weights.onnx
+
 # Process all images in a directory
 python main.py detect ./images/
 
@@ -81,12 +88,13 @@ python main.py detect --help
 
 ```
 Options:
-  --detector-type [local|sdk]  Type of detector to use
-  --recursive                  Process subdirectories if input is a directory
-  --show-result               Show results in window
-  --save-result               Save annotated images
-  --output-dir TEXT           Output directory for annotated images
-  --help                      Show this message and exit.
+  --detector-type [yolo|local|sdk]  Type of detector to use
+  --weights-path TEXT               Path to YOLO weights file (required for YOLO detector)
+  --recursive                       Process subdirectories if input is a directory
+  --show-result                     Show results in window
+  --save-result                     Save annotated images
+  --output-dir TEXT                 Output directory for annotated images
+  --help                           Show this message and exit.
 ```
 
 ### Programmatic Usage
@@ -96,10 +104,10 @@ You can also use the library programmatically:
 #### Basic Usage
 
 ```python
-from main import LocalLicensePlateDetector, LicensePlateProcessor
+from main import YOLOv8LicensePlateDetector, LicensePlateProcessor
 
 # Initialize detector and processor
-detector = LocalLicensePlateDetector(model_id="license-plates-xfeyr/1")
+detector = YOLOv8LicensePlateDetector(weights_path="models/license-plate-recognition-rxg4e-wyhgr/1/weights.onnx")
 processor = LicensePlateProcessor(
     detector=detector,
     plate_model="global-plates-mobile-vit-v2-model",
@@ -145,6 +153,45 @@ results = processor.process_batch(
     save_results=True
 )
 ```
+
+### Model Evaluation
+
+The project includes tools for evaluating license plate detection models using the RodoSol-ALPR dataset. The evaluation process consists of two steps:
+
+1. Prepare the dataset:
+
+```bash
+python main.py eval-prepare RodoSol-ALPR-dataset.zip
+```
+
+This command will:
+
+- Extract the RodoSol-ALPR dataset from the zip file
+- Create the necessary annotation files
+- Set up the directory structure for evaluation
+
+2. Run the evaluation:
+
+```bash
+python main.py eval RodoSol-ALPR/ --detector-type yolo --weights-path models/license-plate-recognition-rxg4e-wyhgr/1/weights.onnx --n-samples 200
+```
+
+Options for evaluation:
+
+- `--detector-type`: Type of detector to use (`local`, `sdk`, or `yolo`)
+- `--weights-path`: Path to YOLO weights file (required for YOLO detector)
+- `--n-samples`: Number of samples to evaluate per category (default: 100)
+
+The evaluation will:
+
+- Sample images from each category (cars-br, cars-me, motorcycles-br, motorcycles-me)
+- Run detection and recognition on the samples
+- Calculate and display metrics including:
+  - Detection Rate: Percentage of images where a plate was detected
+  - Accuracy: Percentage of correctly read plate numbers
+  - Number of samples processed
+  - Number of plates detected
+  - Number of correct readings
 
 ## Project Structure
 
