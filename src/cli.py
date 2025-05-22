@@ -224,9 +224,11 @@ def eval(
 
         # Get configuration from environment
         api_key = os.getenv("ROBOFLOW_API_KEY")
-        model_id = os.getenv("MODEL_ID", "license-plates-xfeyr/1")
+        model_id = os.getenv("MODEL_ID", "license-plate-recognition-rxg4e-wyhgr/3")
         plate_model = os.getenv("PLATE_MODEL", "global-plates-mobile-vit-v2-model")
-        default_weights_path = os.getenv("WEIGHTS_PATH", "weights")
+        default_weights_path = os.getenv(
+            "WEIGHTS_PATH", "license-plate-recognition-rxg4e-wyhgr/3/weights.onnx"
+        )
 
         # Use provided weights_path or default
         weights_path = weights_path or default_weights_path
