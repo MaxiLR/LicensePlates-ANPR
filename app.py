@@ -13,7 +13,7 @@ api_key = os.getenv("ROBOFLOW_API_KEY")
 
 # Available models configuration
 MODELS = {
-    "license-plate-recognition-rxg4e-wyhgr": ["1", "3"],
+    "license-plate-recognition-rxg4e-wyhgr": ["3", "1"],
     "license-plates-v2-m5o4y": ["1"],
 }
 
@@ -25,7 +25,7 @@ st.write(
 # Sidebar for selecting detector type
 detector_type = st.sidebar.selectbox(
     "Choose Detector Type",
-    [DetectorType.LOCAL, DetectorType.SDK, DetectorType.YOLO],
+    [DetectorType.YOLO, DetectorType.LOCAL, DetectorType.SDK],
     format_func=lambda x: x.value.upper(),
 )
 

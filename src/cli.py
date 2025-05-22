@@ -50,9 +50,6 @@ def get_processor(
 ):
     """Initialize detector and processor with lazy imports."""
     # Import heavy dependencies only when needed
-    from .detectors.local_detector import LocalLicensePlateDetector
-    from .detectors.sdk_detector import SDKLicensePlateDetector
-    from .detectors.yolo_detector import YOLOv8LicensePlateDetector
     from .processor import LicensePlateProcessor
 
     if detector_type in [DetectorType.LOCAL, DetectorType.SDK] and not api_key:
@@ -64,10 +61,16 @@ def get_processor(
         raise typer.Exit(1)
 
     if detector_type == DetectorType.LOCAL:
+        from .detectors.local_detector import LocalLicensePlateDetector
+
         detector = LocalLicensePlateDetector(model_id=model_id, api_key=api_key)
     elif detector_type == DetectorType.SDK:
+        from .detectors.sdk_detector import SDKLicensePlateDetector
+
         detector = SDKLicensePlateDetector(api_key=api_key, model_id=model_id)
     else:  # YOLO
+        from .detectors.yolo_detector import YOLOv8LicensePlateDetector
+
         detector = YOLOv8LicensePlateDetector(weights_path=weights_path)
 
     return LicensePlateProcessor(
