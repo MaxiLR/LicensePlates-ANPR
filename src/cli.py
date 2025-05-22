@@ -227,7 +227,8 @@ def eval(
         model_id = os.getenv("MODEL_ID", "license-plate-recognition-rxg4e-wyhgr/3")
         plate_model = os.getenv("PLATE_MODEL", "global-plates-mobile-vit-v2-model")
         default_weights_path = os.getenv(
-            "WEIGHTS_PATH", "license-plate-recognition-rxg4e-wyhgr/3/weights.onnx"
+            "WEIGHTS_PATH",
+            "models/license-plate-recognition-rxg4e-wyhgr/3/weights.onnx",
         )
 
         # Use provided weights_path or default
