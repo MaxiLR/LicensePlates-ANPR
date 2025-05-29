@@ -124,7 +124,7 @@ with st.sidebar:
             "Annotation Persistence (seconds)",
             min_value=0.5,
             max_value=10.0,
-            value=3.0,
+            value=2.0,
             step=0.5,
             help="How long to keep annotations visible after detection",
         )
@@ -423,31 +423,15 @@ elif not st.session_state.streaming:
 # Footer with enhanced information
 st.markdown("---")
 
+# Authors section
 st.markdown(
     """
-### 🔧 System Info & Performance Tips
-- **Model**: license-plate-recognition-rxg4e-wyhgr v3
-- **Detector**: YOLOv8 (Local ONNX)
-- **OCR**: global-plates-mobile-vit-v2-model
-
-### ⚡ Performance Optimizations Applied:
-- **🚀 Zero-copy Processing**: Eliminated temporary file I/O
-- **🧵 Asynchronous Threading**: Background processing for detection
-- **📸 Camera Optimization**: High FPS, low buffer, MJPEG codec
-- **🎯 Smart Frame Skipping**: Configurable detection frequency
-- **💾 Memory Processing**: Direct frame analysis without disk writes
-- **🎪 UI Optimization**: Reduced update frequency for better performance
-- **⏱️ Smart Annotations**: Auto-clear annotations when no recent detections
-
-### 📊 Expected Performance:
-- **Without Threading**: ~15-20 FPS
-- **With Threading**: ~25-35 FPS
-- **Optimal Settings**: 640x480 resolution, process every 5 frames, threading enabled
-
-### 🎛️ Controls:
-- **Annotation Persistence**: Control how long detection boxes stay visible
-- **Frame Processing**: Skip frames to balance speed vs accuracy  
-- **Threading**: Enable background processing for better performance
-- **Buffer Size**: Lower values reduce latency
+### 👥 **Authors**
+This project was developed by:
+- **Giovanni Borgogno**
+- **Maximo Lucero Ruiz**
+- **Santiago Quesada**
+- **Felipe Cañas**
+- **Paolo Cetti**
 """
 )
