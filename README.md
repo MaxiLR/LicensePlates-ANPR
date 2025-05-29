@@ -1,5 +1,26 @@
 # License Plate Detection and Recognition
 
+## 🚀 Quick Start - Real-time Webcam Detection
+
+For **instant real-time license plate detection** using your webcam:
+
+```bash
+# Run the streaming web application
+streamlit run app_stream.py
+```
+
+Then open your browser at `http://localhost:8502` and click **"Start Live Detection"** to begin real-time license plate recognition with your webcam!
+
+**Features:**
+
+- 🎥 Live webcam streaming with real-time detection
+- ⚡ YOLOv8 model with ~200ms inference speed
+- 🎯 Automatic license plate annotations
+- ⚙️ Adjustable confidence and performance settings
+- 📊 Live FPS counter and detection statistics
+
+---
+
 This project provides a flexible implementation for detecting and recognizing license plates in images using either local processing or the Roboflow API.
 
 ## Features
